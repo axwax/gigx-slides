@@ -16,7 +16,7 @@ class GIGX_Post_Type {
   		'show_ui' => true,
   		'rewrite' => false,
   		'query_var' => false,
-  		'supports' => array( 'title', 'editor' )
+  		'supports' => array( 'title', 'editor','thumbnail' )
   		);
     		
    # meta boxes
@@ -32,7 +32,7 @@ class GIGX_Post_Type {
       'fields' => array(
           array(
               'name' => 'URL',
-              'desc' => 'URL to link slide to',
+              'desc' => 'URL of the page the slide links to',
               'id' => 'gigx_slide_url',
               'type' => 'text',
               'std' => 'http://'
@@ -43,18 +43,6 @@ class GIGX_Post_Type {
               'id' => 'gigx_slide_tab',
               'type' => 'text',
               'std' => 'Slide'
-          ),
-          array(
-              'name' => 'Slide Order',
-              'desc' => 'Order of the slides',
-              'id' => 'gigx_slide_order',
-              'type' => 'text',
-              'std' => '0'
-          ),        
-          array(
-              'name' => 'Add Image',
-              'desc' => 'Add a slide image',
-              'type' => 'image'
           )
       )
   );
@@ -90,8 +78,21 @@ class GIGX_Post_Type {
     		add_action('admin_menu', array( &$this, 'admin_menu' ), 20);
         add_action('save_post', array( &$this,'mytheme_save_data'));
         # custom icon
-        add_action('admin_head', array( &$this,'gigx_slide_icon'));    
+        add_action('admin_head', array( &$this,'gigx_slide_icon'));
+        # custom thumbnail size
+        add_image_size( 'gigx-slide', 300, 225 );
+        
+        # change title text (only works for wp >=3.1)
+        add_filter( 'enter_title_here', array( &$this, 'gigx_change_default_title') );            
   	}
+  	# change title text        
+    function gigx_change_default_title( $title ){
+      $screen = get_current_screen();
+      if  ( 'gigx_slide' == $screen->post_type ) {
+        $title = 'Enter Slide Title';
+      }
+      return $title;
+    }  	
   	function gigx_slide_icon() {
       	global $post_type;
       	$url = plugin_dir_url( __FILE__ );
@@ -107,7 +108,7 @@ class GIGX_Post_Type {
         <?php
     }
   
-  	//function query_posts( $num_posts = -1, $size = 'full',$orderby = 'meta_value' ) {
+
   	  function query_posts( $num_posts = -1, $size = 'full',$orderby = 'menu_order' ) {
   		$query = sprintf( 'showposts=%d&post_type=%s&orderby=%s&order=ASC&meta_key=gigx_slide_order', $num_posts, $this->post_type_name,$orderby );
   		$posts = new WP_Query( $query );
@@ -115,10 +116,8 @@ class GIGX_Post_Type {
   		$child = array( 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => 'none' );
   		while( $posts->have_posts() ) {
   			$posts->the_post();
-  			$child['post_parent'] = get_the_ID();
-  			$attachments = get_children( $child );
-  			if( empty( $attachments ) )
-  				continue;
+  			$child['post_parent'] = get_the_ID(); 
+  			
   
   			$p = new stdClass();
   			$p->post_title = get_the_title();
@@ -130,7 +129,7 @@ class GIGX_Post_Type {
   				while( $c > $x++ )
   					next( $attachments );
   			}
-  			$img= wp_get_attachment_image_src( key( $attachments ), $size, false );
+  			$img=wp_get_attachment_image_src (get_post_thumbnail_id(get_the_ID()),'gigx-slide',false);
   			$p->image = '<img src="'.$img[0].'" width="'.$img[1].'" height="'.$img[2].'" alt="'.$p->post_title.'" title="'.$p->post_title.'"/>';
   			$gallery[] = $p;
   		}
@@ -146,8 +145,8 @@ class GIGX_Post_Type {
   		if( empty( $post ) || $this->post_type_name != $post->post_type )
   			return;
   		$child = array( 'post_parent' => $post->ID, 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => 'none' );
-  		$this->attachments = get_children( $child );
-        #ax metabox
+
+  		  #ax metabox
         $meta_box=$this->meta_box;
             add_meta_box($meta_box['id'], $meta_box['title'], array( &$this,'gigx_slide_meta_box'), $this->post_type_name, $meta_box['context'], $meta_box['priority']);
         #ax metabox
@@ -190,20 +189,12 @@ class GIGX_Post_Type {
                     break;
                 case 'checkbox':
                     echo '<input type="checkbox" name="', $field['id'], '" id="', $field['id'], '"', $meta ? ' checked="checked"' : '', ' />';
-                    break;
-                case 'image':
-                    echo _media_button(__('Add an Image'), 'images/media-button-image.gif', 'image');
-                    break;                
+                    break;               
             }
             echo     '<td>',
                 '</tr>';
         }
-        echo '</table>';
-        
-    		echo '<p>';
-    		foreach( (array) $this->attachments as $k => $v )
-    			echo '<span style="padding:3px;">' . wp_get_attachment_image( $k, 'thumbnail', false ) . '</span>';
-    		echo '</p>';    
+        echo '</table>';        
     }
     # /gigx_slide_meta_box
         
