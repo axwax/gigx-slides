@@ -18,7 +18,7 @@ $j(document).ready(function() {
           
 	//tooltips 
 
-        $j(".gigx-slideshow-pagerbutton").tipTip({maxWidth: "200px", edgeOffset: 3, delay: 0, defaultPosition: "top",fadeIn: 100, fadeOut: 100});
+        $j(".gigx-slideshow-pagerbutton").tipTip({maxWidth: "200px", edgeOffset: 3, delay: 0, defaultPosition: "top",fadeIn: 100, fadeOut: 200});
 
           
 });
