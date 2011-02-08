@@ -2,13 +2,11 @@
 
 # GIGX_Slides_Widget
 # properties:
-# $sizes
 # $id
 # $queued
 
 class GIGX_Slides_Widget extends WP_Widget {
 	// Note: these strings match strings in WP exactly. If changed the gettext domain will need to be added
-	var $sizes = array( 'full' => 'Full Size', 'medium' => 'Medium', 'large' => 'Large' );
 	var $id = 'gigx_slide_widget';
 	var $queued = false;
 	function GIGX_Slides_Widget() {
@@ -21,7 +19,7 @@ class GIGX_Slides_Widget extends WP_Widget {
 		global $gigx_slide_type;
 		extract( $args );
 		echo $before_widget; ?>			
-    <div class="gigx-slideshow" id="gigx-slides<?php echo ( $instance['size'] ? '-' . $instance['size'] : '' ); ?>">				
+    <div class="gigx-slideshow">				
       <div class="gigx-slideshow-wrapper">
 <?php		$first = true;
 		$num_posts = -1;
@@ -29,7 +27,7 @@ class GIGX_Slides_Widget extends WP_Widget {
 			$num_posts = $instance['how_many'];
 			
 		if( !empty( $gigx_slide_type ) ) {
-			$posts = $gigx_slide_type->query_posts( $num_posts, $instance['size'] );
+			$posts = $gigx_slide_type->query_posts( $num_posts );
 			$pagermenu='';
 			$count=0;
 			foreach( $posts as $p ) { 
@@ -69,8 +67,6 @@ class GIGX_Slides_Widget extends WP_Widget {
 	}
  	function update( $new_instance, $old_instance ) {
 		$new_instance['how_many'] = intval( $new_instance['how_many'] );
-		if( !in_array( $new_instance['size'], array_keys( $this->sizes ) ) )
-			$new_instance['size'] = 'full';
 		return $new_instance;
 	}
 	function form( $instance ) { ?>		
@@ -82,19 +78,6 @@ class GIGX_Slides_Widget extends WP_Widget {
   <?php echo $this->get_field_name('how_many'); ?>" value="
   <?php echo ( $instance['how_many'] > 0 ? esc_attr( $instance['how_many'] ) : '' ); ?>" />
 </p>		
-<p>			
-  <label for="<?php echo $this->get_field_id('size'); ?>">
-    <?php _e( 'Image Size:' ); ?>
-  </label>			
-  <select name="<?php echo $this->get_field_name('size'); ?>" id="
-    <?php echo $this->get_field_id('size'); ?>" class="widefat"> 
-    <?php		foreach( $this->sizes as $k => $v ) { ?> 				
-    <option value="<?php echo $k; ?>"<?php selected( $instance['size'], $k ); ?>>
-    <?php _e( $v ); ?>
-    </option>
-    <?php		} ?>			
-  </select>		
-</p>
 <?php	}
 	function wp_head() {
 		if( !is_admin() ) {

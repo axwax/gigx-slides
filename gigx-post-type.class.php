@@ -109,7 +109,7 @@ class GIGX_Post_Type {
     }
   
 
-  	  function query_posts( $num_posts = -1, $size = 'full',$orderby = 'menu_order' ) {
+  	  function query_posts( $num_posts = -1, $orderby = 'menu_order' ) {
   		$query = sprintf( 'showposts=%d&post_type=%s&orderby=%s&order=ASC&meta_key=gigx_slide_order', $num_posts, $this->post_type_name,$orderby );
   		$posts = new WP_Query( $query );
   		$gallery = array();
