@@ -23,8 +23,7 @@ class GIGX_Slides_Widget extends WP_Widget {
       <div class="gigx-slideshow-wrapper">
 <?php		$first = true;
 		$num_posts = -1;
-		if( $instance['how_many'] > 0 )
-			$num_posts = $instance['how_many'];
+		//if( $instance['how_many'] > 0 ) $num_posts = $instance['how_many'];
 			
 		if( !empty( $gigx_slide_type ) ) {
 			$posts = $gigx_slide_type->query_posts( $num_posts );

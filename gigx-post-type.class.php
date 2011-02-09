@@ -110,8 +110,8 @@ class GIGX_Post_Type {
   
 
   	  function query_posts( $num_posts = -1, $orderby = 'menu_order' ) {
-  		$query = sprintf( 'showposts=%d&post_type=%s&orderby=%s&order=ASC&meta_key=gigx_slide_order', $num_posts, $this->post_type_name,$orderby );
-  		$posts = new WP_Query( $query );
+  		$query = sprintf( 'showposts=%d&post_type=%s&orderby=%s&order=ASC', $num_posts, $this->post_type_name,$orderby );
+  		$posts = new WP_Query( $query );  
   		$gallery = array();
   		$child = array( 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => 'none' );
   		while( $posts->have_posts() ) {
