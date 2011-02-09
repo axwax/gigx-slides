@@ -43,7 +43,63 @@ class GIGX_Post_Type {
               'id' => 'gigx_slide_tab',
               'type' => 'text',
               'std' => 'Slide'
-          )
+          ),
+          array(
+              'name' => 'Limit Display',
+              'desc' => 'Only display this slide on the following days:',
+              'id' => 'gigx_slide_limit',
+              'type' => 'checkbox',
+              'std' => ''
+          ),
+          array(
+              'name' => 'Monday',
+              'desc' => 'Display this slide on Mondays',
+              'id' => 'gigx_slide_mon',
+              'type' => 'checkbox',
+              'std' => ''
+          ),          
+          array(
+              'name' => 'Tuesday',
+              'desc' => 'Display this slide on Tuesdays',
+              'id' => 'gigx_slide_tue',
+              'type' => 'checkbox',
+              'std' => ''
+          ),          
+          array(
+              'name' => 'Wednesday',
+              'desc' => 'Display this slide on Wednesdays',
+              'id' => 'gigx_slide_wed',
+              'type' => 'checkbox',
+              'std' => ''
+          ),          
+          array(
+              'name' => 'Thursday',
+              'desc' => 'Display this slide on Thursdays',
+              'id' => 'gigx_slide_thu',
+              'type' => 'checkbox',
+              'std' => ''
+          ),          
+          array(
+              'name' => 'Friday',
+              'desc' => 'Display this slide on Fridays',
+              'id' => 'gigx_slide_fri',
+              'type' => 'checkbox',
+              'std' => ''
+          ),          
+          array(
+              'name' => 'Saturday',
+              'desc' => 'Display this slide on Saturdays',
+              'id' => 'gigx_slide_sat',
+              'type' => 'checkbox',
+              'std' => ''
+          ),          
+          array(
+              'name' => 'Sunday',
+              'desc' => 'Display this slide on Sundays',
+              'id' => 'gigx_slide_sun',
+              'type' => 'checkbox',
+              'std' => ''
+          )                    
       )
   );
   		
@@ -124,7 +180,17 @@ class GIGX_Post_Type {
   			$p->post_excerpt = get_the_content();
         $p->post_url= get_post_meta($child['post_parent'], 'gigx_slide_url', true);
   			$p->post_tab= get_post_meta($child['post_parent'], 'gigx_slide_tab', true);
-  			if( ( $c = count( $attachments ) ) > 1 ) {
+  			$p->post_limit= get_post_meta($child['post_parent'], 'gigx_slide_limit', true);
+  			$p->post_mon= get_post_meta($child['post_parent'], 'gigx_slide_mon', true);
+  			$p->post_tue= get_post_meta($child['post_parent'], 'gigx_slide_tue', true);
+        $p->post_wed= get_post_meta($child['post_parent'], 'gigx_slide_wed', true);
+        $p->post_thu= get_post_meta($child['post_parent'], 'gigx_slide_thu', true);
+        $p->post_fri= get_post_meta($child['post_parent'], 'gigx_slide_fri', true);
+        $p->post_sat= get_post_meta($child['post_parent'], 'gigx_slide_sat', true);
+        $p->post_sun= get_post_meta($child['post_parent'], 'gigx_slide_sun', true);
+        
+        
+        if( ( $c = count( $attachments ) ) > 1 ) {
   				$x = rand( 1, $c );
   				while( $c > $x++ )
   					next( $attachments );
