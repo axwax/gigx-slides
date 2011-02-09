@@ -251,7 +251,10 @@ class RW_Meta_Box {
 
 		foreach ($this->_meta_box['fields'] as $field) {
 			// get current post meta data
-			$meta = get_post_meta($post->ID, $field['id'], true);
+
+      #multicheck
+      $meta = get_post_meta($post->ID, $field['id'], 'multicheck' != $field['type'] /* If multicheck this can be multiple values */);
+
 
 			echo '<tr>',
 					'<th style="width:20%"><label for="', $field['id'], '">', $field['name'], '</label></th>',
@@ -323,6 +326,16 @@ class RW_Meta_Box {
 					</div>
 					<?php
 					break;
+          #multicheck
+          case 'multicheck':
+              foreach ( $field['options'] as $value => $name ) {
+                  // Append `[]` to the name to get multiple values
+                  // Use in_array() to check whether the current option should be checked
+                  echo '<input type="checkbox" name="', $field['id'], '[]" id="', $field['id'], '" value="', $value, '"', in_array( $value, $meta ) ? ' checked="checked"' : '', ' /> ', $name, '<br/>';
+              }
+              break;
+          #/multicheck    
+					
 			}
 			echo 	'<td>',
 				'</tr>';
@@ -334,8 +347,9 @@ class RW_Meta_Box {
 	// Save data from meta box
 	function save($post_id) {
 		// verify nonce
-		if (!wp_verify_nonce($_POST['wp_meta_box_nonce'], basename(__FILE__))) {
-			return $post_id;
+		#multicheck
+    if ( ! isset( $_POST['wp_meta_box_nonce'] ) || !wp_verify_nonce($_POST['wp_meta_box_nonce'], basename(__FILE__))) {
+	     return $post_id;
 		}
 
 		// check autosave
@@ -355,8 +369,11 @@ class RW_Meta_Box {
 		foreach ($this->_meta_box['fields'] as $field) {
 			$name = $field['id'];
 
-			$old = get_post_meta($post_id, $name, true);
-			$new = $_POST[$field['id']];
+			#multicheck
+      $old = get_post_meta($post_id, $name, 'multicheck' != $field['type'] /* If multicheck this can be multiple values */);
+
+      #multicheck
+			$new = isset( $_POST[$field['id']] ) ? $_POST[$field['id']] : null;
 
 			/*
 			// changed to using WP gallery
@@ -406,11 +423,31 @@ class RW_Meta_Box {
 				}
 			}
 
-			if ($new && $new != $old) {
-				update_post_meta($post_id, $name, $new);
-			} elseif ('' == $new && $old && $field['type'] != 'file' && $field['type'] != 'image') {
-				delete_post_meta($post_id, $name, $old);
-			}
+      #multicheck
+      if ( 'multicheck' == $field['type'] ) {
+          // Do the saving in two steps: first get everything we don't have yet
+          // Then get everything we should not have anymore
+          if ( empty( $new ) ) {
+              $new = array();
+          }
+          $aNewToAdd = array_diff( $new, $old );
+          $aOldToDelete = array_diff( $old, $new );
+          foreach ( $aNewToAdd as $newToAdd ) {
+              add_post_meta( $post_id, $name, $newToAdd, false );
+          }
+          foreach ( $aOldToDelete as $oldToDelete ) {
+              delete_post_meta( $post_id, $name, $oldToDelete );
+          }
+      } else {
+          // The original lines 409-413
+    			if ($new && $new != $old) {
+    				update_post_meta($post_id, $name, $new);
+    			} elseif ('' == $new && $old && $field['type'] != 'file' && $field['type'] != 'image') {
+    				delete_post_meta($post_id, $name, $old);
+    			}
+      }
+      #/multicheck
+
 		}
 	}
 
