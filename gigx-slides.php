@@ -19,14 +19,23 @@ Update code by Janis Elsts.
 #$checkForUpdate->checkForUpdates();
 # /check for updates
 
-# meta boxes class
-require 'meta-boxes-2.4.php';
-# meta boxes class
+# meta box
+require 'gigx-slides-metabox.php';
+# /meta box
 
 # gigx_slide custom post type
 require 'gigx-post-type.class.php';
 $gigx_slide_type = new GIGX_Post_Type();
 # /gigx_slide custom post type
+
+
+
+
+
+
+
+
+
 
 # gigx slides widget
 require 'gigx-slides-widget.class.php';

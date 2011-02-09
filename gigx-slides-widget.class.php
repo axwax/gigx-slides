@@ -29,27 +29,36 @@ class GIGX_Slides_Widget extends WP_Widget {
 			$posts = $gigx_slide_type->query_posts( $num_posts );
 			$pagermenu='';
 			$count=0;
-			foreach( $posts as $p ) { 
-      $count++;
-          ?>  		
-        <div class="gigx-slide<?php echo ' gigx-slide'.$count;  ?>">			    
-          <div class="gigx-slide-text">            <h1>
-              <?php echo $p->post_title; ?></h1>            
-            <p>
-              <?php echo $p->post_excerpt; ?><br />
-            </p>  			  
-          </div>                 
-          <?php if (($p->post_url)&&($p->post_url<>"http://")) {?>
-          <a href="<?php echo $p->post_url; ?>" title="
-            <?php echo $p->post_title; ?>">
-            <?php } ?>          
-            <?php echo $p->image; ?>          
-            <?php if (($p->post_url)&&($p->post_url<>"http://")) {?></a>
-          <?php } ?>		
-        </div>
-<?php				
-      $pagermenu.='<li class="gigx-slideshow-pagerbutton gigx-slideshow-pagerbutton'.$count.'" title="'.$p->post_title.'"><a href="'.$p->post_url.'">'.$p->post_tab.'</a></li>';
-      $first = false;
+			foreach( $posts as $p ) {
+    			$numdays=count($p->post_limit);
+    			$showslide=true;
+          if ($numdays>0){
+            foreach ($p->post_limit as $d){
+              if(strtolower(date('D'))==$d) $showslide=false;
+            }
+          }
+          if($showslide){
+              $count++;
+                  ?>  		
+                <div class="gigx-slide<?php echo ' gigx-slide'.$count;  ?>">			    
+                  <div class="gigx-slide-text">            <h1>
+                      <?php echo $p->post_title; ?></h1>            
+                    <p>
+                      <?php echo $p->post_excerpt; ?><br />
+                    </p>  			  
+                  </div>                 
+                  <?php if (($p->post_url)&&($p->post_url<>"http://")) {?>
+                  <a href="<?php echo $p->post_url; ?>" title="
+                    <?php echo $p->post_title; ?>">
+                    <?php } ?>          
+                    <?php echo $p->image; ?>          
+                    <?php if (($p->post_url)&&($p->post_url<>"http://")) {?></a>
+                  <?php } ?>		
+                </div>
+                <?php				
+              $pagermenu.='<li class="gigx-slideshow-pagerbutton gigx-slideshow-pagerbutton'.$count.'" title="'.$p->post_title.'"><a href="'.$p->post_url.'">'.$p->post_tab.'</a></li>';
+              $first = false;
+          }   
 			}
 		}
     ?>				
