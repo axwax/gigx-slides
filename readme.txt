@@ -36,6 +36,8 @@ Update code by Janis Elsts.
 == Changelog ==
 
 = 0.0.3 =
+* Fixed Frontend formatting
+* Added "exclude Days" functionality
 * Uploaded to GitHub
 * Changed tooltip to tipTip
 = 0.0.2 =
