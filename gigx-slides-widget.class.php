@@ -43,9 +43,7 @@ class GIGX_Slides_Widget extends WP_Widget {
                 <div class="gigx-slide<?php echo ' gigx-slide'.$count;  ?>">			    
                   <div class="gigx-slide-text">            <h1>
                       <?php echo $p->post_title; ?></h1>            
-                    <p>
-                      <?php echo $p->post_excerpt; ?><br />
-                    </p>  			  
+                      <?php echo wpautop($p->post_excerpt); ?>
                   </div>                 
                   <?php if (($p->post_url)&&($p->post_url<>"http://")) {?>
                   <a href="<?php echo $p->post_url; ?>" title="

@@ -67,6 +67,10 @@ CSS for the gallery widget
 width:400px;
 float:left;
 }
+.gigx-slide-text{
+height:225px;
+overflow: hidden;
+}
 .gigx-slideshow-wrapper .gigx-slide img {
   	display: inline; 
     margin: 0; 

@@ -14,9 +14,9 @@ Update code by Janis Elsts.
 */
 
 # check for updates
-#require 'plugin-update-checker.php';
-#$checkForUpdate = new PluginUpdateChecker('http://gigx.co.uk/wordpress/update/gigx-slides.json', __FILE__, 'gigx-slides', 1);
-#$checkForUpdate->checkForUpdates();
+require 'plugin-update-checker.php';
+$checkForUpdate = new PluginUpdateChecker('http://gigx.co.uk/wordpress/update/gigx-slides.json', __FILE__, 'gigx-slides', 1);
+$checkForUpdate->checkForUpdates();
 # /check for updates
 
 # meta box
