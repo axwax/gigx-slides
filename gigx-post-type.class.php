@@ -16,7 +16,7 @@ class GIGX_Post_Type {
   		'show_ui' => true,
   		'rewrite' => false,
   		'query_var' => false,
-  		'supports' => array( 'title', 'editor','thumbnail' )
+  		'supports' => array( 'title', 'editor','thumbnail','revisions' )
   		); // 'custom-fields'
     		  
   	function GIGX_Post_Type() {
