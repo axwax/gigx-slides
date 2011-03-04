@@ -19,7 +19,7 @@ $j(document).ready(function() {
 	//tooltips 
 
         $j(".gigx-slideshow-pagerbutton").tipTip({maxWidth: "200px", edgeOffset: 3, delay: 0, defaultPosition: "top",fadeIn: 100, fadeOut: 200});
-
+        //$j(".gigx-slide").tipTip({maxWidth: "200px", edgeOffset: 3, delay: 0, defaultPosition: "bottom",fadeIn: 100, fadeOut: 200});
           
 });
            

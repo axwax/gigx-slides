@@ -10,6 +10,9 @@ CSS for the gallery widget
     border-radius: 5px;
     -moz-border-radius: 5px;     
 }
+.gigx-slideshow a {
+   outline: 0;
+}
 
 .gigx-slideshow-wrapper {
   	margin: 0;  
