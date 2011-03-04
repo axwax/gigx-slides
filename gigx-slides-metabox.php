@@ -37,9 +37,9 @@
       		),
           array(
               'name' => 'Don\'t show Slide on',
-              'desc' => 'Don\'t display this slide on the following days:',
+              'desc' => 'Don\'t display this slide on the preceding days.',
               'id' => $prefix.'limit',
-              'type' => 'multicheck',
+              'type' => 'checkbox_list',
               'options' => array(
                   'mon' => 'Monday',
                   'tue' => 'Tuesday',
