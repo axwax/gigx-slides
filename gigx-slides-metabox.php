@@ -1,9 +1,9 @@
 <?php
    # gigx slide meta box
    
-# meta boxes class
-require 'meta-boxes-2.4.php';
-# meta boxes class
+      # meta boxes class
+      if (!class_exists('RW_Meta_Box')) require 'meta-box.php';
+      # meta boxes class
    
       # ax metabox
       // Register meta boxes
