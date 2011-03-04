@@ -45,8 +45,7 @@ class GIGX_Post_Type {
   
   	function init() {
     		register_post_type( $this->post_type_name, $this->post_type );
-    		add_action('save_post', array( &$this,'mytheme_save_data'));
-        # custom icon
+    		# custom icon
         add_action('admin_head', array( &$this,'gigx_slide_icon'));
         # custom thumbnail size
         add_image_size( 'gigx-slide', 300, 225 );
