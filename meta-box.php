@@ -8,18 +8,19 @@
  * @author: Rilwis
  * @url: http://www.deluxeblogtips.com/2010/04/how-to-create-meta-box-wordpress-post.html
  * @usage: please read document at project homepage and meta-box-usage.php file
- * @version: 3.0
+ * @version: 3.0.1
  */
 
 // Ajax delete files on the fly. Modified from a function used by "Verve Meta Boxes" plugin (http://goo.gl/LzYSq)
 add_action('wp_ajax_rw_delete_file', 'rw_delete_file');
 function rw_delete_file() {
 	if (!isset($_POST['data'])) return;
-	list($attach_id, $nonce) = explode('-', $_POST['data']);
+	list($post_id, $key, $attach_id, $src, $nonce) = explode('!', $_POST['data']);
 	if (!wp_verify_nonce($nonce, 'rw_ajax_delete_file')) {
 		_e('You don\'t have permission to delete this file.');
 	}
 	wp_delete_attachment($attach_id);
+	delete_post_meta($post_id, $key, $src);
 	_e('File has been successfully deleted.');
 	die();
 }
@@ -30,13 +31,15 @@ function rw_delete_file() {
 class RW_Meta_Box {
 
 	protected $_meta_box;
+	protected $_fields;
 
 	// Create meta box based on given data
 	function __construct($meta_box) {
 		if (!is_admin()) return;
 
-		// assign meta box value to local variable and add it's missed values
+		// assign meta box values to local variables and add it's missed values
 		$this->_meta_box = $meta_box;
+		$this->_fields = & $this->_meta_box['fields'];
 		$this->add_missed_values();
 
 		add_action('admin_menu', array(&$this, 'add'));	// add meta box
@@ -122,7 +125,7 @@ class RW_Meta_Box {
 	// Custom script for color picker
 	function add_script_color() {
 		$ids = array();
-		foreach ($this->_meta_box['fields'] as $field) {
+		foreach ($this->_fields as $field) {
 			if ('color' == $field['type']) {
 				$ids[] = $field['id'];
 			}
@@ -163,9 +166,9 @@ class RW_Meta_Box {
 	// Custom script for date picker
 	function add_script_date() {
 		$dates = array();
-		foreach ($this->_meta_box['fields'] as $field) {
+		foreach ($this->_fields as $field) {
 			if ('date' == $field['type']) {
-				$dates[$field['id']] = isset($field['format']) ? $field['format'] : 'yy-mm-dd';
+				$dates[$field['id']] = $field['format'];
 			}
 		}
 		echo '
@@ -173,8 +176,10 @@ class RW_Meta_Box {
 		jQuery(document).ready(function($){
 		';
 		foreach ($dates as $id => $format) {
-			echo "$('#$id').datepicker();
-				  $('#$id').datepicker('option', 'dateFormat', '$format');";
+			echo "$('#$id').datepicker({
+				dateFormat: '$format',
+				showButtonPanel: true
+			});";
 		}
 		echo '
 		});
@@ -213,9 +218,9 @@ class RW_Meta_Box {
 
 		// script
 		$times = array();
-		foreach ($this->_meta_box['fields'] as $field) {
+		foreach ($this->_fields as $field) {
 			if ('time' == $field['type']) {
-				$times[$field['id']] = isset($field['format']) ? $field['format'] : 'hh:mm';
+				$times[$field['id']] = $field['format'];
 			}
 		}
 		echo '
@@ -249,7 +254,7 @@ class RW_Meta_Box {
 		wp_nonce_field(basename(__FILE__), 'rw_meta_box_nonce');
 		echo '<table class="form-table">';
 
-		foreach ($this->_meta_box['fields'] as $field) {
+		foreach ($this->_fields as $field) {
 			$meta = get_post_meta($post->ID, $field['id'], !$field['multiple']);
 			$meta = !empty($meta) ? $meta : $field['std'];
 
@@ -265,66 +270,83 @@ class RW_Meta_Box {
 
 	/******************** BEGIN META BOX FIELDS **********************/
 
+	function show_field_begin($field, $meta) {
+		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th><td>";
+	}
+
+	function show_field_end($field, $meta) {
+		echo "<br />{$field['desc']}</td>";
+	}
+
 	function show_field_text($field, $meta) {
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-			  <td><input type='text' name='{$field['id']}' value='$meta' size='30' style='width:97%' /><br />{$field['desc']}</td>";
+		$this->show_field_begin($field, $meta);
+		echo "<input type='text' name='{$field['id']}' id='{$field['id']}' value='$meta' size='30' style='width:97%' />";
+		$this->show_field_end($field, $meta);
 	}
 
 	function show_field_textarea($field, $meta) {
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-			  <td><textarea name='{$field['id']}' cols='60' rows='15' style='width:97%'>$meta</textarea><br />{$field['desc']}</td>";
+		$this->show_field_begin($field, $meta);
+		echo "<textarea name='{$field['id']}' cols='60' rows='15' style='width:97%'>$meta</textarea>";
+		$this->show_field_end($field, $meta);
 	}
 
 	function show_field_select($field, $meta) {
 		if (!is_array($meta)) $meta = (array) $meta;
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-			  <td><select name='{$field['id']}" . ($field['multiple'] ? "[]' multiple='multiple' style='height:auto'" : "'") . ">";
+		$this->show_field_begin($field, $meta);
+		echo "<select name='{$field['id']}" . ($field['multiple'] ? "[]' multiple='multiple' style='height:auto'" : "'") . ">";
 		foreach ($field['options'] as $key => $value) {
 			echo "<option value='$key'" . selected(in_array($key, $meta), true, false) . ">$value</option>";
 		}
-		echo "</select><br />{$field['desc']}</td>";
+		echo "</select>";
+		$this->show_field_end($field, $meta);
 	}
 
 	function show_field_radio($field, $meta) {
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-			  <td>";
+		$this->show_field_begin($field, $meta);
 		foreach ($field['options'] as $key => $value) {
 			echo "<input type='radio' name='{$field['id']}' value='$key'" . checked($meta, $key, false) . " /> $value ";
 		}
-		echo "<br />{$field['desc']}</td>";
+		$this->show_field_end($field, $meta);
 	}
 
 	function show_field_checkbox($field, $meta) {
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-			  <td><input type='checkbox' name='{$field['id']}'" . checked(!empty($meta), true, false) . " /> {$field['desc']}</td>";
+		$this->show_field_begin($field, $meta);
+		echo "<input type='checkbox' name='{$field['id']}'" . checked(!empty($meta), true, false) . " /> {$field['desc']}</td>";
 	}
 
 	function show_field_wysiwyg($field, $meta) {
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-			  <td><textarea name='{$field['id']}' class='theEditor' cols='60' rows='15' style='width:97%'>$meta</textarea><br />{$field['desc']}</td>";
+		$this->show_field_begin($field, $meta);
+		echo "<textarea name='{$field['id']}' class='theEditor' cols='60' rows='15' style='width:97%'>$meta</textarea>";
+		$this->show_field_end($field, $meta);
 	}
 
 	function show_field_file($field, $meta) {
 		global $post;
 
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-			  <td>{$field['desc']}<br />";
+		if (!is_array($meta)) $meta = (array) $meta;
+		
+		$this->show_field_begin($field, $meta);
+		echo "{$field['desc']}<br />";
 
-		// show attached files
-		$attachs = get_posts(array(
-			'post_type' => 'attachment',
-			'post_parent' => $post->ID,
-			'numberposts' => -1
-		));
-		if (!empty($attachs)) {
+		if (!empty($meta)) {
+			// show attached files
+			$attachs = get_posts(array(
+				'numberposts' => -1,
+				'post_type' => 'attachment',
+				'post_parent' => $post->ID
+			));
+			
 			$nonce = wp_create_nonce('rw_ajax_delete_file');
 
-			echo '<div style="margin-bottom: 10px"><strong>' . _('Files attached to this post') . '</strong></div>';
+			echo '<div style="margin-bottom: 10px"><strong>' . _('Uploaded files') . '</strong></div>';
 			echo '<ol>';
 			foreach ($attachs as $att) {
 				if (wp_attachment_is_image($att->ID)) continue; // what's image uploader for?
 
-				echo "<li>" . wp_get_attachment_link($att->ID) . " (<a class='rw-delete-file' href='javascript:void(0)' rel='{$att->ID}-{$nonce}'>Delete</a>)</li>";
+				$src = wp_get_attachment_url($att->ID);
+				if (in_array($src, $meta)) {
+					echo "<li>" . wp_get_attachment_link($att->ID) . " (<a class='rw-delete-file' href='javascript:void(0)' rel='{$post->ID}!{$field['id']}!{$att->ID}!{$src}!{$nonce}'>Delete</a>)</li>";
+				}
 			}
 			echo '</ol>';
 		}
@@ -341,27 +363,33 @@ class RW_Meta_Box {
 	function show_field_image($field, $meta) {
 		global $post;
 
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-			  <td>{$field['desc']}<br />";
+		if (!is_array($meta)) $meta = (array) $meta;
 
-		// show attached images
-		$attachs = get_posts(array(
-			'numberposts' => -1,
-			'post_type' => 'attachment',
-			'post_parent' => $post->ID,
-			'post_mime_type' => 'image', // get attached images only
-			'output' => ARRAY_A
-		));
-		if (!empty($attachs)) {
+		$this->show_field_begin($field, $meta);
+		echo "{$field['desc']}<br />";
+
+		if (!empty($meta)) {
+			// show attached images
+			$attachs = get_posts(array(
+				'numberposts' => -1,
+				'post_type' => 'attachment',
+				'post_parent' => $post->ID,
+				'post_mime_type' => 'image', // get attached images only
+				'output' => ARRAY_A
+			));
+
 			$nonce = wp_create_nonce('rw_ajax_delete_file');
 
-			echo '<div style="margin-bottom: 10px"><strong>' . _('Images attached to this post') . '</strong></div>';
+			echo '<div style="margin-bottom: 10px"><strong>' . _('Uploaded images') . '</strong></div>';
 			foreach ($attachs as $att) {
-				$src = wp_get_attachment_image_src($att->ID, 'thumbnail');
+				$src = wp_get_attachment_image_src($att->ID, 'full');
 				$src = $src[0];
-				echo "<div style='margin: 0 10px 10px 0; float: left'><img width='150' src='$src' /><br />
-						<a class='rw-delete-file' href='javascript:void(0)' rel='{$att->ID}-{$nonce}'>Delete</a>
-					</div>";
+
+				if (in_array($src, $meta)) {
+					echo "<div style='margin: 0 10px 10px 0; float: left'><img width='150' src='$src' /><br />
+							<a class='rw-delete-file' href='javascript:void(0)' rel='{$post->ID}!{$field['id']}!{$att->ID}!{$src}!{$nonce}'>Delete</a>
+						</div>";
+				}
 			}
 		}
 
@@ -376,33 +404,30 @@ class RW_Meta_Box {
 
 	function show_field_color($field, $meta) {
 		if (empty($meta)) $meta = '#';
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-		<td>
-			<input type='text' name='{$field['id']}' id='{$field['id']}' value='$meta' size='8' />
-			<a href='#' id='select-{$field['id']}'>" . _('Select a color') . "</a>
-			<div style='display:none' id='picker-{$field['id']}'></div><br />
-			{$field['desc']}
-		</td>";
+		$this->show_field_begin($field, $meta);
+		echo "<input type='text' name='{$field['id']}' id='{$field['id']}' value='$meta' size='8' />
+			  <a href='#' id='select-{$field['id']}'>" . _('Select a color') . "</a>
+			  <div style='display:none' id='picker-{$field['id']}'></div>";
+		$this->show_field_end($field, $meta);
 	}
 
 	function show_field_checkbox_list($field, $meta) {
 		if (!is_array($meta)) $meta = (array) $meta;
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-			  <td>";
+		$this->show_field_begin($field, $meta);
+		$html = array();
 		foreach ($field['options'] as $key => $value) {
-			echo "<input type='checkbox' name='{$field['id']}[]' value='$key'" . checked(in_array($key, $meta), true, false) . " /> $value<br/>";
+			$html[] = "<input type='checkbox' name='{$field['id']}[]' value='$key'" . checked(in_array($key, $meta), true, false) . " /> $value";
 		}
-		echo "{$field['desc']}</td>";
+		echo implode('<br />', $html);
+		$this->show_field_end($field, $meta);
 	}
 
 	function show_field_date($field, $meta) {
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-			  <td><input type='text' name='{$field['id']}' id='{$field['id']}' value='$meta' size='20' /><br />{$field['desc']}</td>";
+		$this->show_field_text($field, $meta);
 	}
 
 	function show_field_time($field, $meta) {
-		echo "<th style='width:20%'><label for='{$field['id']}'>{$field['name']}</label></th>
-			  <td><input type='text' name='{$field['id']}' id='{$field['id']}' value='$meta' size='20' /><br />{$field['desc']}</td>";
+		$this->show_field_text($field, $meta);
 	}
 
 	/******************** END META BOX FIELDS **********************/
@@ -411,18 +436,17 @@ class RW_Meta_Box {
 
 	// Save data from meta box
 	function save($post_id) {
+		$post_type_object = get_post_type_object($_POST['post_type']);
+
 		if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)						// check autosave
 		|| (!isset($_POST['post_ID']) || $post_id != $_POST['post_ID'])			// check revision
-		|| (!check_admin_referer(basename(__FILE__), 'rw_meta_box_nonce'))) {	// verify nonce
+		|| (!in_array($_POST['post_type'], $this->_meta_box['pages']))			// check if current post type is supported
+		|| (!check_admin_referer(basename(__FILE__), 'rw_meta_box_nonce'))		// verify nonce
+		|| (!current_user_can($post_type_object->cap->edit_post, $post_id))) {	// check permission
 			return $post_id;
 		}
 
-		// check permissions
-		if ('page' == $_POST['post_type']) {
-			if (!current_user_can('edit_page', $post_id)) return $post_id;
-		} elseif (!current_user_can('edit_post', $post_id)) return $post_id;
-
-		foreach ($this->_meta_box['fields'] as $field) {
+		foreach ($this->_fields as $field) {
 			$name = $field['id'];
 			$type = $field['type'];
 			$old = get_post_meta($post_id, $name, !$field['multiple']);
@@ -501,6 +525,7 @@ class RW_Meta_Box {
 			$id = wp_insert_attachment($attachment, $filename, $post_id);
 			if (!is_wp_error($id)) {
 				wp_update_attachment_metadata($id, wp_generate_attachment_metadata($id, $filename));
+				add_post_meta($post_id, $name, $file['url'], false);	// save file's url in meta fields
 			}
 		}
 	}
@@ -524,13 +549,15 @@ class RW_Meta_Box {
 		), $this->_meta_box);
 
 		// default values for fields
-		foreach ($this->_meta_box['fields'] as $key => $field) {
-			$multiple = ('checkbox_list' == $field['type']) ? true : false;
+		foreach ($this->_fields as $key => $field) {
+			$multiple = in_array($field['type'], array('checkbox_list', 'file', 'image')) ? true : false;
 			$std = $multiple ? array() : '';
-			$this->_meta_box['fields'][$key] = array_merge(array(
+			$format = 'date' == $field['type'] ? 'yy-mm-dd' : ('time' == $field['type'] ? 'hh:mm' : '');
+			$this->_fields[$key] = array_merge(array(
 				'multiple' => $multiple,
 				'std' => $std,
 				'desc' => '',
+				'format' => $format,
 				'validate_func' => ''
 			), $field);
 		}
@@ -538,7 +565,7 @@ class RW_Meta_Box {
 
 	// Check if field with $type exists
 	function has_field($type) {
-		foreach ($this->_meta_box['fields'] as $field) {
+		foreach ($this->_fields as $field) {
 			if ($type == $field['type']) return true;
 		}
 		return false;
