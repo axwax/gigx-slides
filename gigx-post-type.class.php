@@ -94,11 +94,6 @@ class GIGX_Post_Type {
   			$p->post_tab= get_post_meta($child['post_parent'], 'gigx_slide_tab', true);
         $p->post_limit= get_post_meta($child['post_parent'], 'gigx_slide_limit', false);      
         
-        if( ( $c = count( $attachments ) ) > 1 ) {
-  				$x = rand( 1, $c );
-  				while( $c > $x++ )
-  					next( $attachments );
-  			}
   			$img=wp_get_attachment_image_src (get_post_thumbnail_id(get_the_ID()),'gigx-slide',false);
   			$p->image = '<img src="'.$img[0].'" width="'.$img[1].'" height="'.$img[2].'" alt="'.$p->post_title.'" title="'.$p->post_title.'"/>';
   			$gallery[] = $p;
