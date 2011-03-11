@@ -24,8 +24,8 @@ require 'gigx-slides-metabox.php';
 # /meta box
 
 # gigx_slide custom post type
-require 'gigx-post-type.class.php';
-$gigx_slide_type = new GIGX_Post_Type();
+require 'gigx-slides-post-type.class.php';
+$gigx_slide_type = new GIGX_Slides_Post_Type();
 # /gigx_slide custom post type
 
 

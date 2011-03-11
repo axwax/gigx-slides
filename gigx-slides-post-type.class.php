@@ -2,7 +2,7 @@
 /*
  * Set values for post type
  */
-class GIGX_Post_Type {
+class GIGX_Slides_Post_Type {
   	var $post_type_name = 'gigx_slide';
   	var $handle = 'gigx-meta-box';
   	var $attachments = null;
@@ -19,7 +19,7 @@ class GIGX_Post_Type {
   		'supports' => array( 'title', 'editor','thumbnail','revisions' )
   		); // 'custom-fields'
     		  
-  	function GIGX_Post_Type() {
+  	function GIGX_Slides_Post_Type() {
   		return $this->__construct();
   	}
   
