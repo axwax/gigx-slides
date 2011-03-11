@@ -35,7 +35,6 @@ class GIGX_Slides_Widget extends WP_Widget {
           if ($numdays>0){
             foreach ($p->post_limit as $d){
               if(date('N')==(int)$d) $showslide=true;
-              echo date('N').$d;
             }
           }
           if($showslide){

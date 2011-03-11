@@ -66,7 +66,7 @@
       		#if ($text != 'hello') {
       		#	return false;
       		#}
-      		return true;
+      		return $text;
       	}
       }
       #ax metabox
