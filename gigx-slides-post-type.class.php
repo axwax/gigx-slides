@@ -48,7 +48,7 @@ class GIGX_Slides_Post_Type {
     		# custom icon
         add_action('admin_head', array( &$this,'gigx_slide_icon'));
         # custom thumbnail size
-        add_image_size( 'gigx-slide', 300, 225 );
+        add_image_size( 'gigx-slide', 300, 225,true );
         
         # change title text (only works for wp >=3.1)
         add_filter( 'enter_title_here', array( &$this, 'gigx_change_default_title') );            
@@ -93,10 +93,11 @@ class GIGX_Slides_Post_Type {
         $p->post_url= get_post_meta($child['post_parent'], 'gigx_slide_url', true);
   			$p->post_tab= get_post_meta($child['post_parent'], 'gigx_slide_tab', true);
         $p->post_limit= get_post_meta($child['post_parent'], 'gigx_slide_limit', false);      
-        
-  			$img=wp_get_attachment_image_src (get_post_thumbnail_id(get_the_ID()),'gigx-slide',false);
-  			$p->image = '<img src="'.$img[0].'" width="'.$img[1].'" height="'.$img[2].'" alt="'.$p->post_title.'" title="'.$p->post_title.'"/>';
-  			$gallery[] = $p;
+        $url = plugin_dir_url( __FILE__ );
+      	$img=wp_get_attachment_image_src (get_post_thumbnail_id(get_the_ID()),'gigx-slide',false);
+      	if($img)$p->image = '<img src="'.$img[0].'" width="'.$img[1].'" height="'.$img[2].'" alt="'.$p->post_title.'" title="'.$p->post_title.'"/>';
+  			else $p->image = '<img src="'.$url.'images/default.png" width="300" height="225" alt="'.$p->post_title.'" title="'.$p->post_title.'"/>'; 
+        $gallery[] = $p;
   		}
   		wp_reset_query();
   		return $gallery;
