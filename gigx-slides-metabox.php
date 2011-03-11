@@ -36,19 +36,19 @@
             'std' => 'Slide'
       		),
           array(
-              'name' => 'Don\'t show Slide on',
-              'desc' => 'Don\'t display this slide on the preceding days.',
+              'name' => 'Show Slide on',
+              'desc' => 'Only Display this slide on the preceding days.',
               'id' => $prefix.'limit',
               'type' => 'checkbox_list',
               'options' => array(
-                  'mon' => 'Monday',
-                  'tue' => 'Tuesday',
-                  'wed' => 'Wednesday',
-                  'thu' => 'Thursday',
-                  'fri' => 'Friday',
-                  'sat' => 'Saturday',
-                  'sun' => 'Sunday'            
-              ),
+                  '1' => 'Monday',
+                  '2' => 'Tuesday',
+                  '3' => 'Wednesday',
+                  '4' => 'Thursday',
+                  '5' => 'Friday',
+                  '6' => 'Saturday',
+                  '7' => 'Sunday'            
+              )
           )
       	)
       );
