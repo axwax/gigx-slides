@@ -5,25 +5,13 @@
  * Compatible with custom post types since WordPress 3.0
  * Support input types: text, textarea, checkbox, checkbox list, radio box, select, wysiwyg, file, image, date, time, color
  *
- * @author: Rilwis
- * @url: http://www.deluxeblogtips.com/2010/04/how-to-create-meta-box-wordpress-post.html
- * @usage: please read document at project homepage and meta-box-usage.php file
- * @version: 3.0.1
+ * @author Rilwis <rilwis@gmail.com>
+ * @link http://www.deluxeblogtips.com/2010/04/how-to-create-meta-box-wordpress-post.html
+ * @example meta-box-usage.php Sample declaration and usage of meta boxes
+ * @version: 3.1
+ *
+ * @license GNU General Public License
  */
-
-// Ajax delete files on the fly. Modified from a function used by "Verve Meta Boxes" plugin (http://goo.gl/LzYSq)
-add_action('wp_ajax_rw_delete_file', 'rw_delete_file');
-function rw_delete_file() {
-	if (!isset($_POST['data'])) return;
-	list($post_id, $key, $attach_id, $src, $nonce) = explode('!', $_POST['data']);
-	if (!wp_verify_nonce($nonce, 'rw_ajax_delete_file')) {
-		_e('You don\'t have permission to delete this file.');
-	}
-	wp_delete_attachment($attach_id);
-	delete_post_meta($post_id, $key, $src);
-	_e('File has been successfully deleted.');
-	die();
-}
 
 /**
  * Meta Box class
@@ -58,9 +46,15 @@ class RW_Meta_Box {
 	function check_field_upload() {
 		if ($this->has_field('image') || $this->has_field('file')) {
 			add_action('post_edit_form_tag', array(&$this, 'add_enctype'));				// add data encoding type for file uploading
+
+			wp_enqueue_script('jquery-ui-core');
+			wp_enqueue_script('jquery-ui-sortable');
 			add_action('admin_head-post.php', array(&$this, 'add_script_upload'));		// add scripts for handling add/delete images
 			add_action('admin_head-post-new.php', array(&$this, 'add_script_upload'));
+			
 			add_action('delete_post', array(&$this, 'delete_attachments'));				// delete all attachments when delete post
+			add_action('wp_ajax_rw_delete_file', array(&$this, 'delete_file'));			// ajax delete files
+			add_action('wp_ajax_rw_reorder_images', array(&$this, 'reorder_images'));	// ajax reorder images
 		}
 	}
 
@@ -71,28 +65,103 @@ class RW_Meta_Box {
 
 	// Add scripts for handling add/delete images
 	function add_script_upload() {
+		global $post;
+		echo '
+		<style type="text/css">
+		.rw-images li {margin: 0 10px 10px 0; float: left; width: 150px; height: 100px; text-align: center; border: 3px solid #ccc; cursor: move; position: relative}
+		.rw-images img {width: 150px; height: 100px}
+		.rw-images a {position: absolute; bottom: 0; right: 0; color: #fff; background: #000; font-weight: bold; padding: 5px}
+		</style>
+		';
+		
 		echo '
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
+		';
+		
+		echo '
 			// add more file
 			$(".rw-add-file").click(function(){
 				var $first = $(this).parent().find(".file-input:first");
 				$first.clone().insertAfter($first).show();
 				return false;
 			});
-
+		';
+		
+		echo '
 			// delete file
 			$(".rw-delete-file").click(function(){
 				var $parent = $(this).parent(),
 					data = $(this).attr("rel");
 				$.post(ajaxurl, {action: \'rw_delete_file\', data: data}, function(response){
-					$parent.fadeOut("slow");
-					alert(response);
+					if (response == "0") {
+						alert("' . __('File has been successfully deleted.') . '");
+						$parent.remove();
+					}
+					if (response == "1") {
+						alert("' . __("You don't have permission to delete this file.") . '");
+					}
 				});
 				return false;
 			});
-		});
-		</script>';
+		';
+		
+		foreach ($this->_fields as $field) {
+			if ('image' != $field['type']) continue;
+			
+			$id = $field['id'];
+			$nonce_delete = wp_create_nonce('rw_ajax_delete_file');
+			echo "
+			// thickbox upload
+			$('#rw_upload_$id').click(function(){
+				backup = window.send_to_editor;
+				window.send_to_editor = function(html) {
+					var el = $(html).is('a') ? $('img', html) : $(html),
+						img_url = el.attr('src'),
+						img_id = el.attr('class');
+					
+					img_id = img_id.slice((img_id.search(/wp-image-/) + 9));
+					
+					html = '<li id=\"item_' + img_id + '\">';
+					html += '<img src=\"' + img_url + '\" />';
+					html += '<a title=\"" . __('Delete this image') . "\" class=\"rw-delete-file\" href=\"#\" rel=\"{$post->ID}!$id!' + img_id + '!$nonce_delete\">" . __('Delete') . "</a>';
+					html += '<input type=\"hidden\" name=\"{$id}[]\" value=\"' + img_id + '\" />';
+					html += '</li>';
+					
+					$('#rw-images-$id').append($(html));
+					
+					tb_remove();
+					window.send_to_editor = backup;
+				}
+				tb_show('', 'media-upload.php?post_id={$post->ID}; ?>&type=image&TB_iframe=true');
+				
+				return false;
+			});
+			";
+			
+			echo "
+			// sort
+			$('#rw-images-$id').sortable({
+				placeholder: 'ui-state-highlight',
+				update: function (){
+					var order = $('#rw-images-$id').sortable('serialize'),
+						data = order + '!' + $('#rw-data-$id').val();
+					$.post(ajaxurl, {action: 'rw_reorder_images', data: data}, function(response){
+						if (response == '0') {
+							alert('" . __('Order saved.') . "');
+						}
+						if (response == '1') {
+							alert(\"" . __("You don't have permission to reorder images.") . "\");
+						}
+					});
+				}
+			});
+			";
+		}
+		
+		echo '});
+		</script>
+		';
 	}
 
 	// Delete all attachments when delete post
@@ -107,6 +176,53 @@ class RW_Meta_Box {
 				wp_delete_attachment($att->ID);
 			}
 		}
+	}
+
+	// Ajax callback for deleting files. Modified from a function used by "Verve Meta Boxes" plugin (http://goo.gl/LzYSq)
+	function delete_file() {
+		if (!isset($_POST['data'])) die();
+
+		list($post_id, $key, $attach_id, $nonce) = explode('!', $_POST['data']);
+
+		if (!wp_verify_nonce($nonce, 'rw_ajax_delete_file')) {
+			die('1');
+		}
+
+		wp_delete_attachment($attach_id);
+		delete_post_meta($post_id, $key, $attach_id);
+
+		die('0');
+	}
+	
+	// Ajax callback for reordering images
+	function reorder_images() {
+		if (!isset($_POST['data'])) die();
+
+		list($order, $post_id, $key, $nonce) = explode('!',$_POST['data']);
+
+		if (!wp_verify_nonce($nonce, 'rw_ajax_sort_file')) {
+			die('1');
+		}
+
+		parse_str($order, $items);
+		$items = $items['item'];
+		$order = 0;
+		$meta = array();
+		foreach ($items as $item) {
+			wp_update_post(array(
+				'ID' => $item,
+				'post_parent' => $post_id,
+				'menu_order' => $order
+			));
+			$order++;
+			$meta[] = $item;
+		}
+		delete_post_meta($post_id, $key);
+		foreach ($meta as $value) {
+			add_post_meta($post_id, $key, $value);
+		}
+
+		die('0');
 	}
 
 	/******************** END UPLOAD **********************/
@@ -156,9 +272,9 @@ class RW_Meta_Box {
 	// Check field date
 	function check_field_date() {
 		if ($this->has_field('date') && $this->is_edit_page()) {
-			// add style and script, must use jQuery UI 1.7.3 to get rid of confliction with WP admin scripts
-			wp_enqueue_style('rw-jquery-ui-css', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.3/themes/base/jquery-ui.css');
-			wp_enqueue_script('rw-jquery-ui', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.7.3/jquery-ui.min.js', array('jquery'));
+			// add style and script, use proper jQuery UI version
+			wp_enqueue_style('rw-jquery-ui-css', 'http://ajax.googleapis.com/ajax/libs/jqueryui/' . $this->get_jqueryui_ver() . '/themes/base/jquery-ui.css');
+			wp_enqueue_script('rw-jquery-ui', 'https://ajax.googleapis.com/ajax/libs/jqueryui/' . $this->get_jqueryui_ver() . '/jquery-ui.min.js', array('jquery'));
 			add_action('admin_head', array(&$this, 'add_script_date'));
 		}
 	}
@@ -194,9 +310,9 @@ class RW_Meta_Box {
 	// Check field time
 	function check_field_time() {
 		if ($this->has_field('time') && $this->is_edit_page()) {
-			// add style and script, must use jQuery UI 1.7.3 to get rid of confliction with WP admin scripts
-			wp_enqueue_style('rw-jquery-ui-css', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.3/themes/base/jquery-ui.css');
-			wp_enqueue_script('rw-jquery-ui', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.7.3/jquery-ui.min.js', array('jquery'));
+			// add style and script, use proper jQuery UI version
+			wp_enqueue_style('rw-jquery-ui-css', 'http://ajax.googleapis.com/ajax/libs/jqueryui/' . $this->get_jqueryui_ver() . '/themes/base/jquery-ui.css');
+			wp_enqueue_script('rw-jquery-ui', 'https://ajax.googleapis.com/ajax/libs/jqueryui/' . $this->get_jqueryui_ver() . '/jquery-ui.min.js', array('jquery'));
 			wp_enqueue_script('rw-timepicker', 'https://github.com/trentrichardson/jQuery-Timepicker-Addon/raw/master/jquery-ui-timepicker-addon.js', array('rw-jquery-ui'));
 			add_action('admin_head', array(&$this, 'add_script_time'));
 		}
@@ -257,6 +373,8 @@ class RW_Meta_Box {
 		foreach ($this->_fields as $field) {
 			$meta = get_post_meta($post->ID, $field['id'], !$field['multiple']);
 			$meta = !empty($meta) ? $meta : $field['std'];
+			
+			$meta = is_array($meta) ? array_map('esc_attr', $meta) : esc_attr($meta);
 
 			echo '<tr>';
 			// call separated methods for displaying each type of field
@@ -280,20 +398,20 @@ class RW_Meta_Box {
 
 	function show_field_text($field, $meta) {
 		$this->show_field_begin($field, $meta);
-		echo "<input type='text' name='{$field['id']}' id='{$field['id']}' value='$meta' size='30' style='width:97%' />";
+		echo "<input type='text' name='{$field['id']}' id='{$field['id']}' value='$meta' size='30' style='{$field['style']}' />";
 		$this->show_field_end($field, $meta);
 	}
 
 	function show_field_textarea($field, $meta) {
 		$this->show_field_begin($field, $meta);
-		echo "<textarea name='{$field['id']}' cols='60' rows='15' style='width:97%'>$meta</textarea>";
+		echo "<textarea name='{$field['id']}' cols='60' rows='15' style='{$field['style']}'>$meta</textarea>";
 		$this->show_field_end($field, $meta);
 	}
 
 	function show_field_select($field, $meta) {
 		if (!is_array($meta)) $meta = (array) $meta;
 		$this->show_field_begin($field, $meta);
-		echo "<select name='{$field['id']}" . ($field['multiple'] ? "[]' multiple='multiple' style='height:auto'" : "'") . ">";
+		echo "<select name='{$field['id']}" . ($field['multiple'] ? "[]' multiple='multiple' style='{$field['style']}'" : "'") . ">";
 		foreach ($field['options'] as $key => $value) {
 			echo "<option value='$key'" . selected(in_array($key, $meta), true, false) . ">$value</option>";
 		}
@@ -316,7 +434,7 @@ class RW_Meta_Box {
 
 	function show_field_wysiwyg($field, $meta) {
 		$this->show_field_begin($field, $meta);
-		echo "<textarea name='{$field['id']}' class='theEditor' cols='60' rows='15' style='width:97%'>$meta</textarea>";
+		echo "<textarea name='{$field['id']}' class='theEditor' cols='60' rows='15' style='{$field['style']}'>$meta</textarea>";
 		$this->show_field_end($field, $meta);
 	}
 
@@ -324,38 +442,26 @@ class RW_Meta_Box {
 		global $post;
 
 		if (!is_array($meta)) $meta = (array) $meta;
-		
+
 		$this->show_field_begin($field, $meta);
 		echo "{$field['desc']}<br />";
 
 		if (!empty($meta)) {
-			// show attached files
-			$attachs = get_posts(array(
-				'numberposts' => -1,
-				'post_type' => 'attachment',
-				'post_parent' => $post->ID
-			));
-			
 			$nonce = wp_create_nonce('rw_ajax_delete_file');
-
-			echo '<div style="margin-bottom: 10px"><strong>' . _('Uploaded files') . '</strong></div>';
+			echo '<div style="margin-bottom: 10px"><strong>' . __('Uploaded files') . '</strong></div>';
 			echo '<ol>';
-			foreach ($attachs as $att) {
-				if (wp_attachment_is_image($att->ID)) continue; // what's image uploader for?
-
-				$src = wp_get_attachment_url($att->ID);
-				if (in_array($src, $meta)) {
-					echo "<li>" . wp_get_attachment_link($att->ID) . " (<a class='rw-delete-file' href='javascript:void(0)' rel='{$post->ID}!{$field['id']}!{$att->ID}!{$src}!{$nonce}'>Delete</a>)</li>";
-				}
+			foreach ($meta as $att) {
+				if (wp_attachment_is_image($att)) continue; // what's image uploader for?
+				echo "<li>" . wp_get_attachment_link($att) . " (<a class='rw-delete-file' href='#' rel='{$post->ID}!{$field['id']}!$att!$nonce'>" . __('Delete') . "</a>)</li>";
 			}
 			echo '</ol>';
 		}
 
 		// show form upload
-		echo "<div style='clear: both'><strong>" . _('Upload new files') . "</strong></div>
+		echo "<div style='clear: both'><strong>" . __('Upload new files') . "</strong></div>
 			<div class='new-files'>
 				<div class='file-input'><input type='file' name='{$field['id']}[]' /></div>
-				<a class='rw-add-file' href='javascript:void(0)'>" . _('Add more file') . "</a>
+				<a class='rw-add-file' href='#'>" . __('Add more file') . "</a>
 			</div>
 		</td>";
 	}
@@ -367,46 +473,33 @@ class RW_Meta_Box {
 
 		$this->show_field_begin($field, $meta);
 		echo "{$field['desc']}<br />";
+		
+		$nonce_delete = wp_create_nonce('rw_ajax_delete_file');
+		$nonce_sort = wp_create_nonce('rw_ajax_sort_file');
 
-		if (!empty($meta)) {
-			// show attached images
-			$attachs = get_posts(array(
-				'numberposts' => -1,
-				'post_type' => 'attachment',
-				'post_parent' => $post->ID,
-				'post_mime_type' => 'image', // get attached images only
-				'output' => ARRAY_A
-			));
+		echo "<input type='hidden' id='rw-data-{$field['id']}' value='{$post->ID}!{$field['id']}!$nonce_sort' />
+			  <ul id='rw-images-{$field['id']}' class='rw-images'>";
+		
+		foreach ($meta as $att) {
+			$src = wp_get_attachment_image_src($att, 'full');
+			$src = $src[0];
 
-			$nonce = wp_create_nonce('rw_ajax_delete_file');
-
-			echo '<div style="margin-bottom: 10px"><strong>' . _('Uploaded images') . '</strong></div>';
-			foreach ($attachs as $att) {
-				$src = wp_get_attachment_image_src($att->ID, 'full');
-				$src = $src[0];
-
-				if (in_array($src, $meta)) {
-					echo "<div style='margin: 0 10px 10px 0; float: left'><img width='150' src='$src' /><br />
-							<a class='rw-delete-file' href='javascript:void(0)' rel='{$post->ID}!{$field['id']}!{$att->ID}!{$src}!{$nonce}'>Delete</a>
-						</div>";
-				}
-			}
+			echo "<li id='item_{$att}'>
+					<img src='$src' />
+					<a title='" . __('Delete this image') . "' class='rw-delete-file' href='#' rel='{$post->ID}!{$field['id']}!$att!$nonce_delete'>" . __('Delete') . "</a>
+					<input type='hidden' name='{$field['id']}[]' value='$att' />
+				</li>";
 		}
-
-		// show form upload
-		echo "<div style='clear: both'><strong>" . _('Upload new images') . "</strong></div>
-			<div class='new-files'>
-				<div class='file-input'><input type='file' name='{$field['id']}[]' /></div>
-				<a class='rw-add-file' href='javascript:void(0)'>" . _('Add more image') . "</a>
-			</div>
-		</td>";
+		echo '</ul>';
+		
+		echo "<a href='#' style='float: left; clear: both; margin-top: 10px' id='rw_upload_{$field['id']}' class='rw_upload button'>" . __('Upload new image') . "</a>";
 	}
 
 	function show_field_color($field, $meta) {
 		if (empty($meta)) $meta = '#';
 		$this->show_field_begin($field, $meta);
-		echo "<input type='text' name='{$field['id']}' id='{$field['id']}' value='$meta' size='8' />
-			  <a href='#' id='select-{$field['id']}'>" . _('Select a color') . "</a>
+		echo "<input type='text' name='{$field['id']}' id='{$field['id']}' value='$meta' size='8' style='{$field['style']}' />
+			  <a href='#' id='select-{$field['id']}'>" . __('Select a color') . "</a>
 			  <div style='display:none' id='picker-{$field['id']}'></div>";
 		$this->show_field_end($field, $meta);
 	}
@@ -436,11 +529,12 @@ class RW_Meta_Box {
 
 	// Save data from meta box
 	function save($post_id) {
-		$post_type_object = get_post_type_object($_POST['post_type']);
+		global $post_type;
+		$post_type_object = get_post_type_object($post_type);
 
 		if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)						// check autosave
 		|| (!isset($_POST['post_ID']) || $post_id != $_POST['post_ID'])			// check revision
-		|| (!in_array($_POST['post_type'], $this->_meta_box['pages']))			// check if current post type is supported
+		|| (!in_array($post_type, $this->_meta_box['pages']))					// check if current post type is supported
 		|| (!check_admin_referer(basename(__FILE__), 'rw_meta_box_nonce'))		// verify nonce
 		|| (!current_user_can($post_type_object->cap->edit_post, $post_id))) {	// check permission
 			return $post_id;
@@ -471,31 +565,17 @@ class RW_Meta_Box {
 	function save_field($post_id, $field, $old, $new) {
 		$name = $field['id'];
 
-		// single value
-		if (!$field['multiple']) {
-			if ('' != $new && $new != $old) {
-				update_post_meta($post_id, $name, $new);
-			} elseif ('' == $new) {
-				delete_post_meta($post_id, $name, $old);
+		delete_post_meta($post_id, $name);
+		if (empty($new)) return;
+		
+		if ($field['multiple']) {
+			foreach ($new as $add_new) {
+				add_post_meta($post_id, $name, $add_new, false);
 			}
-			return;
+		} else {
+			update_post_meta($post_id, $name, $new);
 		}
-
-		// multiple values
-		// get new values that need to add and get old values that need to delete
-		$add = array_diff($new, $old);
-		$delete = array_diff($old, $new);
-		foreach ($add as $add_new) {
-			add_post_meta($post_id, $name, $add_new, false);
-		}
-		foreach ($delete as $delete_old) {
-			delete_post_meta($post_id, $name, $delete_old);
-		}
-	}
-
-	function save_field_textarea($post_id, $field, $old, $new) {
-		$new = htmlspecialchars($new);
-		$this->save_field($post_id, $field, $old, $new);
+		
 	}
 
 	function save_field_wysiwyg($post_id, $field, $old, $new) {
@@ -525,14 +605,9 @@ class RW_Meta_Box {
 			$id = wp_insert_attachment($attachment, $filename, $post_id);
 			if (!is_wp_error($id)) {
 				wp_update_attachment_metadata($id, wp_generate_attachment_metadata($id, $filename));
-				add_post_meta($post_id, $name, $file['url'], false);	// save file's url in meta fields
+				add_post_meta($post_id, $name, $id, false);	// save file's url in meta fields
 			}
 		}
-	}
-
-	// Save images, call save_field_file, cause they use the same mechanism
-	function save_field_image($post_id, $field, $old, $new) {
-		$this->save_field_file($post_id, $field, $old, $new);
 	}
 
 	/******************** END META BOX SAVE **********************/
@@ -549,15 +624,19 @@ class RW_Meta_Box {
 		), $this->_meta_box);
 
 		// default values for fields
-		foreach ($this->_fields as $key => $field) {
+		foreach ($this->_fields as & $field) {
 			$multiple = in_array($field['type'], array('checkbox_list', 'file', 'image')) ? true : false;
 			$std = $multiple ? array() : '';
 			$format = 'date' == $field['type'] ? 'yy-mm-dd' : ('time' == $field['type'] ? 'hh:mm' : '');
-			$this->_fields[$key] = array_merge(array(
+			$style = 'width: 97%';
+			if ('select' == $field['type']) $style = 'height: auto';
+			
+			$field = array_merge(array(
 				'multiple' => $multiple,
 				'std' => $std,
 				'desc' => '',
 				'format' => $format,
+				'style' => $style,
 				'validate_func' => ''
 			), $field);
 		}
@@ -580,9 +659,9 @@ class RW_Meta_Box {
 
 	/**
 	 * Fixes the odd indexing of multiple file uploads from the format:
-	 *     $_FILES['field']['key']['index']
+	 *	 $_FILES['field']['key']['index']
 	 * To the more standard and appropriate:
-	 *     $_FILES['field']['index']['key']
+	 *	 $_FILES['field']['index']['key']
 	 */
 	function fix_file_array(&$files) {
 		$output = array();
@@ -592,6 +671,16 @@ class RW_Meta_Box {
 			}
 		}
 		$files = $output;
+	}
+	
+	// Get proper jQuery UI version to not conflict with WP admin scripts
+	function get_jqueryui_ver() {
+		global $wp_version;
+		if (version_compare($wp_version, '3.1', '>=')) {
+			return '1.8.10';
+		}
+		
+		return '1.7.3';
 	}
 
 	/******************** END HELPER FUNCTIONS **********************/
