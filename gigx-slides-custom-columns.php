@@ -11,8 +11,7 @@ add_filter("manage_edit-gigx_slide_columns", "gigx_slide_columns");
         "title" => "Slide Title",
         "limit" => "Show Slide on:",
         "linkimage" => "Featured Image",       
-        "date" => "Date",
-        "menu_order" => "Menu Order"
+        "date" => "Date"
     );
     return $columns;
 }
@@ -79,7 +78,7 @@ function gigx_slides_custom_columns($column)
         $title = get_post_meta($post->ID, "gigx_slide_title", $single=true);
         $img=wp_get_attachment_image_src (get_post_thumbnail_id($post->ID),array(64,64),false);
   			$image = '<img src="'.$img[0].'" width="'.$img[1].'" height="'.$img[2].'" alt="'.$title.'" title="'.$title.'"/>';
-        edit_post_link($image, '<p><strong>', '</strong></p>',$post->ID);
+        //edit_post_link($image, '<p><strong>', '</strong></p>',$post->ID);
     }    
 }
 ?>
