@@ -1,8 +1,8 @@
 === GIGX Slides Widget ===
 Tags: custom, post, gallery, widget
 Requires at least: 3.0
-Tested up to: 3.1
-Stable tag: 0.0.3
+Tested up to: 3.1.2
+Stable tag: 0.0.4
 
 A rotating gallery widget using a custom post type for gallery content.
 
@@ -35,6 +35,9 @@ Update code by Janis Elsts.
 
 == Changelog ==
 
+= 0.0.4 =
+* CHANGE: now includes days, rather than excludes
+* FEATURE: now displays visible days and slide thumbnails in GIGX Slides and Sort screens
 = 0.0.3 =
 * Fixed Frontend formatting
 * Added "exclude Days" functionality

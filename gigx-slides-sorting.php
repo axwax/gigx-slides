@@ -36,8 +36,12 @@ function gigx_sort_slides() {
             $limitstring.= $weekday[$limit].', ';
           }
           $weekdays=substr($limitstring,0,-2);
-  	  ?>
-  		<li id="<?php the_id(); ?>"><?php echo $image.get_the_title(). ' ' . '<br/><a style="font-size: 11px;text-decoration: none;font-weight:normal;" href="post.php?post='.get_the_id().'&action=edit">edit</a> | <span style="font-size: 11px;">'.$weekdays.'</span>';?></li>			
+          
+        #post status
+        if (get_post_status(get_the_id())=="draft")$poststatus=' <strong>(draft)</strong>';
+        else $poststatus='';
+  	  ?>  
+  		<li id="<?php the_id(); ?>"><?php echo $image.get_the_title() . $poststatus . '<br/><a style="font-size: 11px;text-decoration: none;font-weight:normal;" href="post.php?post='.get_the_id().'&action=edit">edit</a> | <span style="font-size: 11px;">'.$weekdays.'</span>';?></li>			
   	<?php endwhile; ?>
   </ul>	
 	</div><!-- End div#wrap //-->
