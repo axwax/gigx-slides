@@ -43,4 +43,31 @@ require 'gigx-slides-sorting.php';
 # gigx_slide custom columns
 require 'gigx-slides-custom-columns.php';
 # /gigx_slide custom columns
+
+# gigx_slide custom template
+add_action("template_redirect", 'gigx_slides_template_redirect');
+
+// Template selection
+function gigx_slides_template_redirect()
+{
+	global $wp;
+	global $wp_query;
+	if ($wp->query_vars["post_type"] == "gigx_slide")
+	{
+		// Let's look for the property.php template file in the current theme
+		if (have_posts())
+		{
+			if ( file_exists( STYLESHEETPATH . '/single-gigx_slide.php' ) )include ( STYLESHEETPATH . '/single-gigx_slide.php' );
+			else if ( file_exists( TEMPLATEPATH . '/single-gigx_slide.php' ) )include ( TEMPLATEPATH . '/single-gigx_slide.php' );
+			else include ( 'single-gigx_slide.php' ); 
+      //include(TEMPLATEPATH . '/property.php');
+			die();
+		}
+		else
+		{
+			$wp_query->is_404 = true;
+		}
+	}
+}
+# gigx_slide custom template
 ?>
