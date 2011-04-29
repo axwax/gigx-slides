@@ -23,9 +23,23 @@ function gigx_sort_slides() {
 	<div class="wrap">
 	<h3>Sort Slides <img src="<?php bloginfo('url'); ?>/wp-admin/images/loading.gif" id="loading-animation" /></h3>
 	<ul id="gigx-slides-list">
-	<?php while ( $slides->have_posts() ) : $slides->the_post(); ?>
-		<li id="<?php the_id(); ?>"><?php the_title(); ?></li>			
-	<?php endwhile; ?>
+  	<?php 
+      while ( $slides->have_posts() ) : $slides->the_post();	      
+          $img=wp_get_attachment_image_src (get_post_thumbnail_id(get_the_id()),array(35,35),false);
+    			$image = '<img class="alignright" src="'.$img[0].'" width="'.$img[1].'" height="'.$img[2].'" alt="'.$title.'" title="'.$title.'"/>';     
+          # weekdays
+          $limitarr=get_post_meta(get_the_id(), "gigx_slide_limit", false);
+          sort($limitarr,SORT_NUMERIC);
+          $limitstring='';
+          $weekday= Array('','Mon','Tue','Wed','Thu','Fri','Sat','Sun');
+          foreach( $limitarr as $limit ) {
+            $limitstring.= $weekday[$limit].', ';
+          }
+          $weekdays=substr($limitstring,0,-2);
+  	  ?>
+  		<li id="<?php the_id(); ?>"><?php echo $image.get_the_title(). ' ' . '<br/><a style="font-size: 11px;text-decoration: none;font-weight:normal;" href="post.php?post='.get_the_id().'&action=edit">edit</a> | <span style="font-size: 11px;">'.$weekdays.'</span>';?></li>			
+  	<?php endwhile; ?>
+  </ul>	
 	</div><!-- End div#wrap //-->
  
 <?php
