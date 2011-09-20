@@ -10,7 +10,8 @@ add_filter("manage_edit-gigx_slide_columns", "gigx_slide_columns");
         "cb" => "<input type=\"checkbox\" />",  
         "title" => "Slide Title",
         "limit" => "Show Slide on:",
-        "linkimage" => "Featured Image",       
+        "week" => "Odd / Even Week:",
+		"linkimage" => "Featured Image",       
         "date" => "Date"
     );
     return $columns;
@@ -66,6 +67,16 @@ function gigx_slides_custom_columns($column)
         
         echo substr($limitstring,0,-2);
     }
+	elseif ('week' == $column){
+		#odd/even week
+		$weekstring='';
+		$weekarr=get_post_meta($post->ID, "gigx_slide_week", false);
+		sort($weekarr,SORT_STRING);
+		foreach( $weekarr as $week ) {
+			$weekstring.= $week.', ';
+		}
+		echo substr($weekstring,0,-2);	
+	}
     elseif ("url" == $column) {
         $url = get_post_meta($post->ID, "gigx_slide_url", $single=true);
         echo "<a href=\"$url\" target=\"_blank\">$url</a>";

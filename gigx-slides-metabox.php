@@ -35,22 +35,33 @@
             'type' => 'text',
             'std' => 'Slide'
       		),
-          array(
-              'name' => 'Show Slide on',
-              'desc' => 'Only Display this slide on the preceding days.',
-              'id' => $prefix.'limit',
-              'type' => 'checkbox_list',
-              'options' => array(
-                  '1' => 'Monday',
-                  '2' => 'Tuesday',
-                  '3' => 'Wednesday',
-                  '4' => 'Thursday',
-                  '5' => 'Friday',
-                  '6' => 'Saturday',
-                  '7' => 'Sunday'            
-              )
-          )
-      	)
+			array(
+			  'name' => 'Show Slide on',
+			  'desc' => 'Only Display this slide on the preceding days.',
+			  'id' => $prefix.'limit',
+			  'type' => 'checkbox_list',
+			  'options' => array(
+				  '1' => 'Monday',
+				  '2' => 'Tuesday',
+				  '3' => 'Wednesday',
+				  '4' => 'Thursday',
+				  '5' => 'Friday',
+				  '6' => 'Saturday',
+				  '7' => 'Sunday'            
+				)
+			),
+			array(
+			  'name' => 'Odd or Even Week',
+			  'desc' => 'Display this slide on odd, even or both weeks?',
+			  'id' => $prefix.'week',
+			  'type' => 'checkbox_list',
+			  'options' => array(
+				  'odd' => 'Odd',
+				  'even' => 'Even'            
+				)
+			)
+		)
+  
       );
       foreach ($meta_boxes as $meta_box) {
       	$my_box = new RW_Meta_Box($meta_box);

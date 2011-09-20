@@ -36,12 +36,23 @@ function gigx_sort_slides() {
             $limitstring.= $weekday[$limit].', ';
           }
           $weekdays=substr($limitstring,0,-2);
+		  
+		  #odd/even week
+		  $weekstring='';
+		  $weekarr=get_post_meta(get_the_id(), "gigx_slide_week", false);
+		  sort($weekarr,SORT_STRING);
+		  foreach( $weekarr as $week ) {
+            $weekstring.= $week.', ';
+          }
+		  $week=substr($weekstring,0,-2);
+		  
+          
           
         #post status
         if (get_post_status(get_the_id())=="draft")$poststatus=' <strong>(draft)</strong>';
         else $poststatus='';
   	  ?>  
-  		<li id="<?php the_id(); ?>"><?php echo $image.get_the_title() . $poststatus . '<br/><a style="font-size: 11px;text-decoration: none;font-weight:normal;" href="post.php?post='.get_the_id().'&action=edit">edit</a> | <span style="font-size: 11px;">'.$weekdays.'</span>';?></li>			
+  		<li id="<?php the_id(); ?>"><?php echo $image.get_the_title() . $poststatus . '<br/><a style="font-size: 11px;text-decoration: none;font-weight:normal;" href="post.php?post='.get_the_id().'&action=edit">edit</a> | <span style="font-size: 11px;">'.$weekdays.'</span> | <span style="font-size: 11px;">'.$week.'</span>';?></li>			
   	<?php endwhile; ?>
   </ul>	
 	</div><!-- End div#wrap //-->

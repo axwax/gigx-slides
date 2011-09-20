@@ -4,7 +4,7 @@ Plugin Name: GIGX Slides
 Plugin URI: http://gigx.co.uk/wordpress/plugins/gigx-slides/
 Description: A Rotating Gallery Widget using a custom post type to create GIGX Slides.
 Author: AxWax
-Version: 0.0.3
+Version: 0.0.5
 Author URI: http://axwax.de/
 Credits:
 This plugin is based on Post Gallery Widget by Ron Rennick 

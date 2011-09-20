@@ -27,15 +27,30 @@ class GIGX_Slides_Widget extends WP_Widget {
 			$posts = $gigx_slide_type->query_posts( $num_posts );
 			$pagermenu='';
 			$count=0;
+			
+			//current week
+			if(date("W") % 2 >0)$currentweek='odd';
+			else $currentweek='even';
+			
+			//loop through slides
 			foreach( $posts as $p ) {
+				// check weekdays	
     			$numdays=count($p->post_limit);
     			$showslide=false;
-          if ($numdays>0){
-            foreach ($p->post_limit as $d){
-              if(date('N')==(int)$d) $showslide=true;
-            }
-          }
-          if($showslide&&($count<$instance['how_many']||$instance['how_many']<1)){
+				if ($numdays>0){
+					foreach ($p->post_limit as $d){
+						if(date('N')==(int)$d) $showslide=true;
+					}
+				}
+				$showweek=false;
+				$whatweeks=count($p->post_week);
+				foreach ($p->post_week as $w){
+					if($w==$currentweek)$showweek=true;
+				}
+
+				//if(date("W") % 2)==
+				
+          if($showweek && $showslide&&($count<$instance['how_many']||$instance['how_many']<1)){
               $count++;
                   ?>  		
                 <div class="gigx-slide<?php echo ' gigx-slide'.$count;  ?>">			    

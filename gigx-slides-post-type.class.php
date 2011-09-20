@@ -92,7 +92,8 @@ class GIGX_Slides_Post_Type {
   			$p->post_excerpt = get_the_content();
         $p->post_url= get_post_meta($child['post_parent'], 'gigx_slide_url', true);
   			$p->post_tab= get_post_meta($child['post_parent'], 'gigx_slide_tab', true);
-        $p->post_limit= get_post_meta($child['post_parent'], 'gigx_slide_limit', false);      
+        $p->post_limit= get_post_meta($child['post_parent'], 'gigx_slide_limit', false);   
+		$p->post_week= get_post_meta($child['post_parent'], 'gigx_slide_week', false); 
         $url = plugin_dir_url( __FILE__ );
       	$img=wp_get_attachment_image_src (get_post_thumbnail_id(get_the_ID()),'gigx-slide',false);
       	if($img)$p->image = '<img src="'.$img[0].'" width="'.$img[1].'" height="'.$img[2].'" alt="'.$p->post_title.'" title="'.$p->post_title.'"/>';

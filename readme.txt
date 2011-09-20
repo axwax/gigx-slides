@@ -35,6 +35,8 @@ Update code by Janis Elsts.
 
 == Changelog ==
 
+= 0.0.5 =
+* FEATURE: filter slides by odd/even week
 = 0.0.4 =
 * CHANGE: now includes days, rather than excludes
 * FEATURE: now displays visible days and slide thumbnails in GIGX Slides and Sort screens
