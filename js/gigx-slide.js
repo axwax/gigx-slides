@@ -1,6 +1,7 @@
 var $j = jQuery.noConflict();
 
 $j(document).ready(function() {
+    $j('.gigx-slideshow-pagerbutton a').css({ 'letter-spacing':'2px' });
   // slideshow
   	$j('.gigx-slideshow-wrapper').cycle({
   		fx: 'fade',
