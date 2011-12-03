@@ -52,7 +52,7 @@ function gigx_slides_template_redirect()
 {
 	global $wp;
 	global $wp_query;
-	if ($wp->query_vars["post_type"] == "gigx_slide")
+	if (is_array("wp->query_vars") && $wp->query_vars["post_type"] == "gigx_slide")
 	{
 		// Let's look for the property.php template file in the current theme
 		if (have_posts())
