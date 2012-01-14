@@ -1,7 +1,7 @@
 === GIGX Slides Widget ===
 Tags: custom, post, gallery, widget
 Requires at least: 3.0
-Tested up to: 3.3.2
+Tested up to: 3.3.1
 Stable tag: 0.0.4
 
 A rotating gallery widget using a custom post type for gallery content.
