@@ -101,9 +101,9 @@ class GIGX_Slides_Widget extends WP_Widget {
 		if( !is_admin() ) {
 			$this->queued = true;
 			$url = plugin_dir_url( __FILE__ );
-			wp_enqueue_style( 'gigx-cycle', $url . 'css/style.css' );
+			//wp_enqueue_style( 'gigx-cycle', $url . 'css/style.css' );
 			wp_enqueue_script( 'jquery' );
-			wp_enqueue_script( 'gigx-cycle-js', $url . 'js/jquery.cycle.lite.min.js', array( 'jquery' ), '1.4', true );
+			wp_enqueue_script( 'gigx-cycle-js', $url . 'js/jquery.cycle.all.js', array( 'jquery' ), '1.4', true );
 			wp_enqueue_script( 'gigx-clickable-js', $url . 'js/jquery.clickable-0.1.9.js', array( 'jquery' ), '1.4', true );
       wp_enqueue_script( 'gigx-tooltip-js', $url . 'js/jquery.tipTip.minified.js', array( 'jquery' ), '1.4', true );
 			wp_enqueue_script( 'gigx-cycle-slide-js', $url . 'js/gigx-slide.js', false, false, true );
