@@ -29,6 +29,13 @@
             'validate_func' => 'check_text' // validate function, created below, inside RW_Meta_Box_Validate class
       		),
       		array(
+            'name' => 'Target',
+            'desc' => 'tick to open link in new tab/window.',
+            'id' => $prefix .'target',
+            'type' => 'checkbox',
+            'std' => 0,		
+      		),
+            array(
             'name' => 'Tab Label',
             'desc' => 'Label for the slide\'s tab',
             'id' => $prefix.'tab',

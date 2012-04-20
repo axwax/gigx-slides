@@ -53,19 +53,20 @@ class GIGX_Slides_Widget extends WP_Widget {
           if($showweek && $showslide&&($count<$instance['how_many']||$instance['how_many']<1)){
               $count++;
                   ?>  		
-                <div class="gigx-slide<?php echo ' gigx-slide'.$count;  ?>">			    
-                  <div class="gigx-slide-text">
-                      <h1><?php echo $p->post_title; ?></h1>            
-                      <?php echo wpautop($p->post_excerpt); ?>
-                  </div>                 
+                <div class="gigx-slide<?php echo ' gigx-slide'.$count;  ?>">			                  
                   <?php if (($p->post_url)&&($p->post_url<>"http://")) {?>
-                  <a href="<?php echo $p->post_url; ?>" title="<?php echo $p->post_title; ?>">
+                  <a href="<?php echo $p->post_url; ?>" <?php echo $p->post_target; ?>title="<?php echo $p->post_title; ?>">
                     <?php } ?>          
                     <?php echo $p->image; ?>          
                     <?php if (($p->post_url)&&($p->post_url<>"http://")) {?></a>
-                  <?php } ?>		
+                  <?php } ?>
+                  <div class="gigx-slide-text">
+                      <h1><?php echo $p->post_title; ?></h1>            
+                      <?php echo wpautop($p->post_excerpt); ?>
+                  </div>   		  
                 </div>
-                <?php				
+                <?php
+               if (!($p->post_url)||($p->post_url=="http://"))$p->post_url="/"; // just link to page root
               $pagermenu.='<li class="gigx-slideshow-pagerbutton gigx-slideshow-pagerbutton'.$count.'" title="'.$p->post_title.'"><a href="'.$p->post_url.'">'.$p->post_tab.'</a></li>';
               $first = false;
           }   
@@ -101,17 +102,18 @@ class GIGX_Slides_Widget extends WP_Widget {
 		if( !is_admin() ) {
 			$this->queued = true;
 			$url = plugin_dir_url( __FILE__ );
-			//wp_enqueue_style( 'gigx-cycle', $url . 'css/style.css' );
 			wp_enqueue_script( 'jquery' );
 			wp_enqueue_script( 'gigx-cycle-js', $url . 'js/jquery.cycle.all.js', array( 'jquery' ), '1.4', true );
-			wp_enqueue_script( 'gigx-clickable-js', $url . 'js/jquery.clickable-0.1.9.js', array( 'jquery' ), '1.4', true );
-      wp_enqueue_script( 'gigx-tooltip-js', $url . 'js/jquery.tipTip.minified.js', array( 'jquery' ), '1.4', true );
+			wp_enqueue_script( 'gigx-fitted-js', $url . 'js/jquery.fitted.js', array( 'jquery' ), '1.4', true );
+			wp_enqueue_script( 'gigx-tooltip-js', $url . 'js/jquery.tipTip.minified.js', array( 'jquery' ), '1.4', true );
 			wp_enqueue_script( 'gigx-cycle-slide-js', $url . 'js/gigx-slide.js', false, false, true );
 		}
 	}
 	function wp_footer() {
 		if( $this->queued ) {
 			wp_deregister_script( 'gigx-cycle-js' );
+			wp_deregister_script( 'gigx-fitted-js' );
+			wp_deregister_script( 'gigx-tooltip-js' );
 			wp_deregister_script( 'gigx-cycle-slide-js' );
 		}
 	}
