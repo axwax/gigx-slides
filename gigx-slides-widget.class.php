@@ -48,7 +48,10 @@ class GIGX_Slides_Widget extends WP_Widget {
 					if($w==$currentweek)$showweek=true;
 				}
 
-				//if(date("W") % 2)==
+				# axmod: always show slides 
+				$showweek=true;
+				$showslide=true;
+				# axmod
 				
           if($showweek && $showslide&&($count<$instance['how_many']||$instance['how_many']<1)){
               $count++;

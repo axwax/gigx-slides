@@ -48,7 +48,7 @@ class GIGX_Slides_Post_Type {
     		# custom icon
         add_action('admin_head', array( &$this,'gigx_slide_icon'));
         # custom thumbnail size
-        add_image_size( 'gigx-slide', 300, 225,true );
+        add_image_size( 'gigx-slide', 625, 225,true );
         
         # change title text (only works for wp >=3.1)
         add_filter( 'enter_title_here', array( &$this, 'gigx_change_default_title') );            
