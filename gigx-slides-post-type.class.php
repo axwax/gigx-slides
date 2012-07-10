@@ -8,8 +8,8 @@ class GIGX_Slides_Post_Type {
   	var $attachments = null;
   
   	var $post_type = array(
-  		'label' => 'GIGX Slides',
-  		'singular_label' => 'GIGX Slide',
+  		'label' => 'Slides',
+  		'singular_label' => 'Slide',
   		'menu_position' => '1',
   		'taxonomies' => array(),
   		'public' => true,
