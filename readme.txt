@@ -1,8 +1,8 @@
 === GIGX Slides Widget ===
 Tags: custom, post, gallery, widget
 Requires at least: 3.0
-Tested up to: 3.3.1
-Stable tag: 0.0.4
+Tested up to: 3.4.1
+Stable tag: 0.1.0
 
 A rotating gallery widget using a custom post type for gallery content.
 
@@ -35,6 +35,13 @@ Update code by Janis Elsts.
 
 == Changelog ==
 
+= 0.1.0 =
+* updated cycle to v2.9999
+* pause on hover
+* use fitted.js instead of clickable.js
+* added target tickbox
+*renamed menus to "Slides"
+*swapped image and text div in widget markup
 = 0.0.5 =
 * FEATURE: filter slides by odd/even week
 = 0.0.4 =
