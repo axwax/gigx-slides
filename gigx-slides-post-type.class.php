@@ -69,8 +69,8 @@ class GIGX_Slides_Post_Type {
       	<?php if (($_GET['post_type'] == 'gigx_slide') || ($post_type == 'gigx_slide')) : ?>
       	#icon-edit { background:transparent url('<?php echo $url .'images/icon32x32.png';?>') no-repeat; }		
       	<?php endif; ?>
-      	#adminmenu #menu-posts-gigxslide div.wp-menu-image{background: url("<?php echo $url .'images/icon.png';?>") no-repeat 6px -17px !important;}
-      	#adminmenu #menu-posts-gigxslide:hover div.wp-menu-image,#adminmenu #menu-posts-gallery.wp-has-current-submenu div.wp-menu-image{background-position:6px 7px!important;}	    	
+      	#menu-posts-gigx_slide .wp-menu-image{background: url("<?php echo $url .'images/icon.png';?>") no-repeat 6px -17px !important;}
+      	#menu-posts-gigx_slide:hover div.wp-menu-image,#menu-posts-gigx_slide.wp-has-current-submenu div.wp-menu-image{background-position:6px 7px!important;}	    	
       	
         </style>
         <?php
@@ -90,6 +90,12 @@ class GIGX_Slides_Post_Type {
   			$p = new stdClass();
   			$p->post_title = get_the_title();
   			$p->post_excerpt = get_the_content();
+         if (get_post_meta($child['post_parent'], 'gigx_slide_target', true)){
+            $p->post_target='rel="external" ';
+         }
+         else {
+            $p->post_target='';
+         }
         $p->post_url= get_post_meta($child['post_parent'], 'gigx_slide_url', true);
   			$p->post_tab= get_post_meta($child['post_parent'], 'gigx_slide_tab', true);
         $p->post_limit= get_post_meta($child['post_parent'], 'gigx_slide_limit', false);   
