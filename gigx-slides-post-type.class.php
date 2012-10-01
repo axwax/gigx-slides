@@ -25,7 +25,8 @@ class GIGX_Slides_Post_Type {
   
   	function  __construct() {
   		add_action( 'init', array( &$this, 'init' ) );
-  
+
+		$this->post_type['menu_icon'] = plugin_dir_url( __FILE__ ) . '/images/icon16x16.png';
   		$this->post_type['description'] = $this->post_type['singular_label'];
   		$this->post_type['labels'] = array(
   			'name' => $this->post_type['label'],
@@ -68,10 +69,7 @@ class GIGX_Slides_Post_Type {
       	<style>
       	<?php if (($_GET['post_type'] == 'gigx_slide') || ($post_type == 'gigx_slide')) : ?>
       	#icon-edit { background:transparent url('<?php echo $url .'images/icon32x32.png';?>') no-repeat; }		
-      	<?php endif; ?>
-      	#menu-posts-gigx_slide .wp-menu-image{background: url("<?php echo $url .'images/icon.png';?>") no-repeat 6px -17px !important;}
-      	#menu-posts-gigx_slide:hover div.wp-menu-image,#menu-posts-gigx_slide.wp-has-current-submenu div.wp-menu-image{background-position:6px 7px!important;}	    	
-      	
+      	<?php endif; ?>      	
         </style>
         <?php
     }
